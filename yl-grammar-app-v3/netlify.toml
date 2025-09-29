@@ -5,13 +5,13 @@
 [functions]
   node_bundler = "esbuild"
 
-# 1) API 路由 → Functions
+# API routes go to Netlify Functions
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"
   status = 200
 
-# 2) SPA 路由 → index.html
+# SPA fallback: all other routes serve index.html
 [[redirects]]
   from = "/*"
   to = "/index.html"
