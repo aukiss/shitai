@@ -1,1 +1,458 @@
-<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>YL Grammar</title></head><body><h3>站点就绪 ✅</h3><p>请从 Git 仓库的 v3 index.html 覆盖到此处。此最小页面用于验证 SPA 路由与 Functions 配置。</p></body></html>
+
+<!doctype html><html lang="zh-CN"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover"/>
+<title>译林六年级｜语法与时态 · AI学练系统</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net"/>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.0/dist/tesseract.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root{ --brand:#1e90ff; --ink:#222; --muted:#666; --bg:#f7fbff; --card:#fff; --chip:#eef6ff; }
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;}
+  header{position:sticky;top:0;background:#fff;border-bottom:1px solid #eee;padding:10px 12px;display:flex;gap:10px;align-items:center;z-index:10}
+  main{max-width:1200px;margin:16px auto;padding:0 12px 80px}
+  .tabs{display:flex;gap:8px;margin:8px 0;overflow:auto;-webkit-overflow-scrolling:touch}
+  .tab{padding:10px 14px;border-radius:999px;background:#eef3ff;cursor:pointer;flex:0 0 auto}
+  .tab.active{background:var(--brand);color:#fff}
+  .grid{display:grid;grid-template-columns:1.1fr 1fr;gap:14px}
+  .card{background:var(--card);border:1px solid #e9eef5;border-radius:14px;box-shadow:0 2px 10px rgba(30,144,255,.06);padding:14px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  input,select,button,textarea{font-size:16px}
+  input[type=text],input[type=password],select{padding:12px;border:1px solid #dbe6f5;border-radius:12px;outline:none;min-width:120px}
+  button{padding:12px 16px;border:0;border-radius:12px;background:var(--brand);color:#fff;font-weight:700;cursor:pointer}
+  button.ghost{background:#eef3ff;color:#124}
+  .quiz-item{border:1px dashed #d6e6ff;border-radius:12px;padding:12px;margin:12px 0}
+  .explain{background:#fffbe6;border:1px solid #ffe58f;padding:10px;border-radius:10px;margin-top:8px}
+  .chip{display:inline-block;padding:4px 8px;background:var(--chip);border-radius:999px;font-size:12px;margin-right:6px}
+  .meter{height:12px;background:#eef3ff;border-radius:999px;overflow:hidden;margin-top:6px}
+  .meter>span{display:block;height:100%;background:linear-gradient(90deg,#7bd389,var(--brand));width:0%}
+  .hint-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .hint-btn{background:#ffe9d6;color:#8a3f00}
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;padding:16px}
+  .modal .box{background:#fff;max-width:720px;width:100%;border-radius:14px;padding:16px}
+  @media (max-width: 980px){ .grid{grid-template-columns:1fr} main{padding-bottom:120px} header{position:sticky} }
+  @media (pointer:coarse){ button,input,select{min-height:44px} label{min-height:44px;display:flex;align-items:center} }
+  @media print{header,.no-print,.tabs,.modal{display:none !important} body{background:#fff} .print-page{page-break-after:always}}
+</style>
+</head><body>
+<header class="no-print">
+  <b>📘 译林六年级｜语法与时态</b>
+  <span style="margin-left:auto;color:#045" id="who">未登录</span>
+</header>
+<main>
+  <div class="tabs no-print">
+    <div class="tab active" data-tab="practice">练习</div>
+    <div class="tab" data-tab="class">班级面板</div>
+    <div class="tab" data-tab="settings">个人设置</div>
+  </div>
+
+  <section id="pane-practice">
+    <div class="grid">
+      <section class="card">
+        <h3>🔐 登录</h3>
+        <div class="row">
+          <input id="phone" placeholder="手机号（仅数字）" inputmode="numeric" />
+          <input id="pw" type="password" placeholder="密码（≥6位）" />
+          <input id="nick" placeholder="昵称（可选）" />
+          <input id="classId" placeholder="班级ID（如 ClassA）" />
+          <button id="btnLogin" type="button">登录</button>
+          <button id="btnReg" type="button" class="ghost">注册</button>
+        </div>
+        <div id="authMsg" style="color:#666;margin-top:6px"></div>
+        <hr/>
+        <h3>🎯 练习</h3>
+        <div class="row">
+          <select id="unit">
+            <option value="">（系统推荐）</option>
+            <option>U1-过去进行时</option>
+            <option>U2-一般过去时 vs 现在完成时</option>
+            <option>U3-主谓一致（基础）</option>
+            <option>U4-被动语态入门</option>
+            <option>U5-状语从句（时间/原因）</option>
+            <option>综合-易错点混合</option>
+          </select>
+          <select id="count"><option>5</option><option selected>10</option><option>15</option></select>
+          <button id="btnStart" type="button">开始出题</button>
+          <button id="btnA4" type="button" class="ghost">下载A4</button>
+          <button id="btnSprint" type="button" class="ghost">考试周冲刺包</button>
+        </div>
+        <div id="quiz"></div>
+        <div class="row">
+          <button id="btnSubmit" type="button" class="ghost">提交判分</button>
+          <button id="btnReview" type="button">今日复习</button>
+        </div>
+        <div id="result" style="margin-top:6px;color:#444"></div>
+      </section>
+
+      <section class="card">
+        <h3>🧭 进度</h3>
+        <div class="meter"><span id="meter"></span></div>
+        <div style="font-size:14px;color:#666">掌握度 <b id="pct">0%</b> · 连续打卡 <b id="streak">0</b> 天</div>
+        <details style="margin-top:8px" open>
+          <summary>📂 导入真题（CSV/JSON）</summary>
+          <input id="fileBank" type="file" accept=".csv,.json,.jsonl" />
+          <div id="bankMsg" style="font-size:12px;color:#666"></div>
+        </details>
+        <details>
+          <summary>🖼️ 试卷图片分析</summary>
+          <input id="filePaper" type="file" accept="image/*" />
+          <div class="row"><button id="btnAnalyze" type="button" class="ghost">分析</button></div>
+          <div id="paperOut" style="font-size:14px;color:#444"></div>
+        </details>
+      </section>
+    </div>
+    <section id="printArea" class="card" style="margin-top:12px">
+      <h3>📄 A4 打印练习</h3>
+      <div id="worksheet"></div>
+    </section>
+  </section>
+
+  <section id="pane-class" style="display:none">
+    <section class="card">
+      <h3>🏫 班级面板</h3>
+      <div class="row">
+        <button id="btnRefreshClass" type="button" class="ghost">刷新数据</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px">
+        <div class="card">
+          <h4>正确率排行榜（Top 10）</h4>
+          <ol id="rankList"></ol>
+        </div>
+        <div class="card">
+          <h4>班级概览</h4>
+          <div id="overviewBox" style="color:#444"></div>
+          <canvas id="chartRate" height="200"></canvas>
+        </div>
+      </div>
+    </section>
+  </section>
+
+  <section id="pane-settings" style="display:none">
+    <section class="card">
+      <h3>👤 个人设置</h3>
+      <div class="row">
+        <input id="profileNick" placeholder="昵称" />
+        <input id="profileClass" placeholder="班级ID（如 ClassA）" />
+        <button id="btnSaveProfile" type="button">保存</button>
+      </div>
+      <div id="profileMsg" style="font-size:12px;color:#666;margin-top:6px"></div>
+    </section>
+  </section>
+</main>
+
+<!-- 冲刺包弹窗 -->
+<div id="dlgSprint" class="modal">
+  <div class="box">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h3 style="margin:0">🗓️ 考试周冲刺计划（7天）</h3>
+      <button onclick="closeSprint()" class="ghost">关闭</button>
+    </div>
+    <div id="sprintPlan" style="margin-top:8px"></div>
+    <div class="row" style="margin-top:8px">
+      <button onclick="downloadSprintPDF()">下载为PDF</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = {
+  async req(path, method='GET', body=null){
+    const headers = {'Content-Type':'application/json'};
+    const t = localStorage.getItem('token'); if(t) headers['Authorization'] = 'Bearer '+t;
+    const res = await fetch('/api/'+path, {method, headers, body: body? JSON.stringify(body): null});
+    const txt = await res.text();
+    try{ return JSON.parse(txt);}catch{ return {ok:false, error:txt}; }
+  },
+  login: (p)=>API.req('auth-login','POST',p),
+  register: (p)=>API.req('auth-register','POST',p),
+  saveProgress: (p)=>API.req('progress','POST',p),
+  getProgress: ()=>API.req('progress','GET'),
+  getBank: ()=>API.req('bank','GET'),
+  setBank: (items)=>API.req('bank','POST',{items}),
+  chat: (payload)=>API.req('ai-proxy','POST',payload),
+  getProfile: ()=>API.req('profile','GET'),
+  setProfile: (p)=>API.req('profile','POST',p),
+  classStats: ()=>API.req('class-stats','GET'),
+};
+
+document.querySelectorAll('.tab').forEach(function(t){
+  t.onclick = function(){
+    document.querySelectorAll('.tab').forEach(function(x){ x.classList.remove('active'); });
+    t.classList.add('active');
+    var target = t.getAttribute('data-tab');
+    document.querySelectorAll('section[id^=pane-]').forEach(function(p){
+      p.style.display = (p.id === 'pane-'+target) ? '' : 'none';
+    });
+  };
+});
+
+var current = []; var answers={}; var bank=[]; var stats={done:0,correct:0,streak:0,lastDay:''}; var mistakes=[]; var chart=null;
+
+function toast(t){ var d=document.createElement('div'); d.textContent=t; Object.assign(d.style,{position:'fixed',left:'50%',top:'20px',transform:'translateX(-50%)',background:'#222',color:'#fff',padding:'10px 14px',borderRadius:'999px',zIndex:9999}); document.body.appendChild(d); setTimeout(function(){d.remove();},1600); }
+function esc(s){return (s||'').replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m];});}
+function shuffle(a){for(var i=a.length-1;i>0;i--){var j=(Math.random()*(i+1))|0; var tmp=a[i]; a[i]=a[j]; a[j]=tmp; }}
+
+function ensureLoginUI(){
+  var who = document.querySelector('#who');
+  var t = localStorage.getItem('token'), phone = localStorage.getItem('phone');
+  who.textContent = t? ('已登录：'+(phone||'')) : '未登录';
+}
+async function afterLogin(){
+  ensureLoginUI();
+  await loadProgress();
+  await loadProfile();
+  document.querySelector('#authMsg').textContent = '已登录';
+}
+document.querySelector('#btnReg').onclick = async function(){
+  var phone = document.querySelector('#phone').value.trim();
+  var password = document.querySelector('#pw').value;
+  var nickname = document.querySelector('#nick').value.trim();
+  var class_id = document.querySelector('#classId').value.trim();
+  var r = await API.register({phone:phone,password:password,nickname:nickname,class_id:class_id});
+  document.querySelector('#authMsg').textContent = r.ok? '注册成功，已登录' : '失败：'+(r.error||''); 
+  if(r.ok){ localStorage.setItem('token', r.data.token); localStorage.setItem('phone', r.data.user.phone); afterLogin(); }
+};
+document.querySelector('#btnLogin').onclick = async function(){
+  var phone = document.querySelector('#phone').value.trim();
+  var password = document.querySelector('#pw').value;
+  var r = await API.login({phone:phone,password:password});
+  document.querySelector('#authMsg').textContent = r.ok? '登录成功' : '失败：'+(r.error||''); 
+  if(r.ok){ localStorage.setItem('token', r.data.token); localStorage.setItem('phone', r.data.user.phone); afterLogin(); }
+};
+
+document.querySelector('#fileBank').onchange = async function(e){
+  var f = e.target.files && e.target.files[0]; if(!f) return;
+  var box = document.querySelector('#bankMsg'); box.textContent='导入中…';
+  try{
+    var txt = await f.text(); var arr=[];
+    if(f.name.endsWith('.csv')){ var parsed = Papa.parse(txt,{header:true,skipEmptyLines:true}); arr = parsed.data; }
+    else if(f.name.endsWith('.jsonl')){ arr = txt.trim().split(/\\n+/).map(function(s){return JSON.parse(s);}); }
+    else { arr = JSON.parse(txt); }
+    arr = (Array.isArray(arr)?arr:[arr]).map(function(r){ return {unit:r.unit||'综合', grammar:r.grammar||'综合', type:r.type||'单选', stem:String(r.stem||'').trim(), A:r.A||'', B:r.B||'', C:r.C||'', D:r.D||'', answer:(r.answer||'').toString().trim().toUpperCase(), explanation:r.explanation||'', source:r.source||'', difficulty:r.difficulty||2}; });
+    var resp = await API.setBank(arr);
+    box.textContent = resp.ok? ('已上传：'+arr.length+'题') : ('失败：'+resp.error);
+  }catch(err){ box.textContent='失败：'+(err.message||err); }
+};
+
+async function startQuiz(){
+  var sel = document.querySelector('#unit').value;
+  var count = parseInt(document.querySelector('#count').value,10);
+  if(bank.length===0){
+    var r = await API.getBank(); if(r.ok) bank = r.data.items || [];
+  }
+  var chosen = bank.filter(function(q){ return !sel || (q.unit||'').indexOf(sel) > -1; });
+  shuffle(chosen);
+  chosen = chosen.slice(0, count);
+  if(chosen.length < count){
+    var need = count - chosen.length;
+    var gen = await aiMake(need, sel || '六年级译林综合');
+    chosen = chosen.concat(gen);
+  }
+  current = chosen.map(function(q,i){ q.idx=i; return q; });
+  answers={};
+  renderQuiz();
+}
+document.querySelector('#btnStart').onclick = startQuiz;
+
+function renderQuiz(){
+  var area = document.querySelector('#quiz'); area.innerHTML='';
+  current.forEach(function(q,i){
+    var div = document.createElement('div'); div.className='quiz-item';
+    var opts = ['A','B','C','D'].filter(function(k){return q[k];});
+    var html = '<div><span class="chip">'+esc(q.unit)+'</span><span class="chip">'+esc(q.grammar)+'</span><span class="chip">'+esc(q.type)+'</span></div>';
+    html += '<div style="margin-top:6px;font-weight:700;font-size:18px">'+(i+1)+'. '+esc(q.stem)+'</div>';
+    if(opts.length){
+      opts.forEach(function(k){
+        html += '<label style="display:block;margin:6px 0"><input type="radio" name="q_'+i+'" value="'+k+'"/> '+k+'. '+esc(q[k])+'</label>';
+      });
+    }else{
+      html += '<input data-q="'+i+'" placeholder="填空…" style="width:100%"/>';
+    }
+    html += '<div class="hint-row"><button class="hint-btn" data-hint="1" data-i="'+i+'">提示1</button><button class="hint-btn" data-hint="2" data-i="'+i+'">提示2</button><button class="hint-btn" data-hint="3" data-i="'+i+'">提示3</button></div>';
+    html += '<div class="explain" style="display:none"></div>';
+    div.innerHTML = html;
+    area.appendChild(div);
+  });
+  area.querySelectorAll('.hint-btn').forEach(function(btn){
+    btn.onclick = async function(){
+      var level = parseInt(btn.getAttribute('data-hint'),10);
+      var idx = parseInt(btn.getAttribute('data-i'),10);
+      var q = current[idx];
+      var hint = await aiHint(q, level);
+      var ex = btn.parentElement.nextElementSibling;
+      ex.style.display='block';
+      ex.innerHTML = '<b>提示'+level+'：</b>'+hint;
+    };
+  });
+  document.querySelector('#result').textContent='';
+}
+
+async function submit(){
+  document.querySelectorAll('input[type="radio"]:checked, input[data-q]').forEach(function(el){
+    var idx = el.name? parseInt(el.name.split('_')[1],10): parseInt(el.getAttribute('data-q'),10);
+    answers[idx] = (el.value||'').trim();
+  });
+  var correct=0;
+  var nodes = Array.prototype.slice.call(document.querySelectorAll('.quiz-item'));
+  for(var i=0;i<current.length;i++){
+    var q = current[i];
+    var node = nodes[i];
+    var user = (answers[i]||'').toUpperCase();
+    var right = (user === (q.answer||'').toUpperCase());
+    if(right) correct++;
+    var pack = await aiExplainRich(q, user, right);
+    var expBox = node.querySelector('.explain'); 
+    expBox.style.display='block'; 
+    var html = '';
+    html += '你的答案：<b style="color:'+(right?'#0a8c5f':'#c0392b')+'">'+esc(user||'（未作答）')+'</b><br/>正确答案：<b>'+esc(q.answer||'')+'</b>';
+    html += '<div style="margin-top:6px">'+ (pack.reason || '') +'</div>';
+    if(pack.rule){ html += '<details><summary>本题规则/错因标签</summary><div>'+pack.rule+'</div></details>'; }
+    if(pack.example){ html += '<details><summary>相似例子</summary><div>'+pack.example+'</div></details>'; }
+    if(pack.distractors){
+      html += '<details><summary>干扰项为什么错？</summary><ul>';
+      ['A','B','C','D'].forEach(function(k){ if(pack.distractors[k]) html += '<li><b>'+k+'</b>：'+pack.distractors[k]+'</li>'; });
+      html += '</ul></details>';
+    }
+    expBox.innerHTML = html;
+    if(!right) pushMistake(q, user);
+  }
+  var today = new Date().toISOString().slice(0,10);
+  if(stats.lastDay !== today){ stats.streak += 1; stats.lastDay = today; }
+  stats.done += current.length; stats.correct += correct;
+  await API.saveProgress({stats:stats, mistakes:mistakes, records:[]});
+  renderStats();
+  var rate = Math.round(correct/current.length*100);
+  document.querySelector('#result').innerHTML = '共 <b>'+current.length+'</b> 题，正确 <b style="color:#0a8c5f">'+correct+'</b>（'+rate+'%）';
+}
+document.querySelector('#btnSubmit').onclick = submit;
+
+function pushMistake(q, user){
+  var key = btoa(unescape(encodeURIComponent(q.stem+'||'+(q.answer||'')))).slice(0,24);
+  var EB = [5,30,720,1440,2880,5760,10080,21600]; // 分钟
+  var now = Date.now();
+  var found = mistakes.find(function(x){return x.key===key;});
+  if(found){ found.step = Math.max(0, found.step-1); found.user=user; found.nextReview = now + EB[found.step]*60000; }
+  else mistakes.push({key:key, unit:q.unit, grammar:q.grammar, stem:q.stem, A:q.A,B:q.B,C:q.C,D:q.D, answer:q.answer, explanation:q.explanation, user:user, step:0, nextReview: now + EB[0]*60000});
+}
+
+async function startReview(){
+  var now = Date.now();
+  var due = mistakes.filter(function(m){return m.nextReview<=now;}).slice(0,10);
+  if(due.length===0){ toast('今天没有到期复习题'); return; }
+  current = due.map(function(m,i){ return {unit:m.unit, grammar:m.grammar, type:'错题复习', stem:m.stem, A:m.A,B:m.B,C:m.C,D:m.D, answer:m.answer, explanation:m.explanation, idx:i}; });
+  answers={}; renderQuiz(); toast('已加载到期复习题');
+}
+document.querySelector('#btnReview').onclick = startReview;
+
+function renderStats(){
+  var total = Math.max(1, stats.done);
+  var pctVal = Math.min(100, Math.round(stats.correct/total*100));
+  document.querySelector('#meter').style.width = pctVal+'%';
+  document.querySelector('#pct').textContent = pctVal+'%';
+  document.querySelector('#streak').textContent = stats.streak;
+}
+
+async function loadProgress(){
+  var r = await API.getProgress();
+  if(r.ok){ var d=r.data; stats=d.stats||stats; mistakes=d.mistakes||[]; renderStats(); }
+}
+async function loadProfile(){
+  var r = await API.getProfile();
+  if(r.ok){
+    document.querySelector('#profileNick').value = r.data.nickname || '';
+    document.querySelector('#profileClass').value = r.data.class_id || '';
+  }
+}
+document.querySelector('#btnSaveProfile').onclick = async function(){
+  var nickname = document.querySelector('#profileNick').value.trim();
+  var class_id = document.querySelector('#profileClass').value.trim();
+  var r = await API.setProfile({nickname:nickname, class_id:class_id});
+  document.querySelector('#profileMsg').textContent = r.ok? '已保存' : '失败：'+(r.error||'');
+};
+
+async function aiMake(n, topic){
+  var sys = '你是小学英语教练，教材体系为“译林版 六年级”。出题要求：\\n- 题型：单选或填空，聚焦“'+topic+'”\\n- 输出 JSON 数组 questions[]，每题含 unit,grammar,type,stem,A,B,C,D,answer,explanation。\\n- 难度适中，避免刁钻。';
+  var usr = '请生成 '+n+' 题。';
+  var res = await API.chat({messages:[{role:'system',content:sys},{role:'user',content:usr}], response_format:{type:'json_object'}});
+  var content = (res.choices && res.choices[0] && res.choices[0].message && res.choices[0].message.content) || '{}';
+  var list=[]; try{ var obj = JSON.parse(content); list = obj.questions||[]; }catch(e){}
+  list = (Array.isArray(list)?list:[]).map(function(r){ return {unit:r.unit||'综合', grammar:r.grammar||'综合', type:r.type||'单选', stem:String(r.stem||'').trim(), A:r.A||'', B:r.B||'', C:r.C||'', D:r.D||'', answer:(r.answer||'').toString().trim().toUpperCase(), explanation:r.explanation||'', source:r.source||'', difficulty:r.difficulty||2}; }).filter(function(q){return q.stem && q.answer;});
+  return list;
+}
+async function aiHint(q, level){
+  var p = '请针对这道六年级题目提供“第'+level+'级提示”：第1级只提示语法点；第2级给关键词或时间信号词；第3级给半成句框架但不直接给答案。题目：'+ JSON.stringify({stem:q.stem, options:{A:q.A,B:q.B,C:q.C,D:q.D}, grammar:q.grammar});
+  var r = await API.chat({messages:[{role:'system',content:'你是简洁的英语老师。'},{role:'user',content:p}]});
+  return (r.choices && r.choices[0] && r.choices[0].message && r.choices[0].message.content) || '（提示生成失败）';
+}
+async function aiExplainRich(q, user, isRight){
+  var p = '请以JSON输出对小学生友好的讲解：{reason, rule, example, distractors{A,B,C,D}}。要求：1) 开头先说明作答是否正确并简要原因（reason）；2) 用孩子能懂的话讲清规则（rule）；3) 给一个相似例子（example）；4) 对每个干扰项写一句“为什么看起来对但错在……”（distractors）。题目：'+ JSON.stringify({stem:q.stem, options:{A:q.A,B:q.B,C:q.C,D:q.D}, user:user, answer:q.answer, grammar:q.grammar});
+  var r = await API.chat({messages:[{role:'system',content:'你是耐心的英语老师，输出必须是JSON。'},{role:'user',content:p}], response_format:{type:'json_object'}});
+  var content = (r.choices && r.choices[0] && r.choices[0].message && r.choices[0].message.content) || '{}';
+  try{ return JSON.parse(content); }catch(e){ return {reason:'（讲解生成失败）'}; }
+}
+
+document.querySelector('#btnA4').onclick = async function(){
+  if(current.length===0){ toast('请先出题'); return; }
+  buildWorksheet();
+  await html2pdf().set({ margin:10, filename:'A4_练习_'+Date.now()+'.pdf', image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2}, jsPDF:{unit:'mm',format:'a4',orientation:'portrait'} }).from(document.querySelector('#worksheet')).save();
+};
+function buildWorksheet(){
+  var ws = document.querySelector('#worksheet'); ws.innerHTML='';
+  var n=10; for(var i=0;i<current.length;i+=n){
+    var page = current.slice(i,i+n);
+    var div=document.createElement('div'); div.className='print-page';
+    var html = '<h3 style="text-align:center;margin:6px 0 12px">译林六年级·语法与时态 A4（第 '+(i/n+1)+' 页）</h3><ol>';
+    page.forEach(function(q){
+      html += '<li style="margin:8px 0">'+esc(q.stem)+ renderWorksheetOpts(q) +'</li>';
+    });
+    html += '</ol>';
+    div.innerHTML = html;
+    ws.appendChild(div);
+  }
+}
+function renderWorksheetOpts(q){
+  var opts=['A','B','C','D'].filter(function(k){return q[k];});
+  if(opts.length===0) return '<div style="border-bottom:1px solid #ccc;width:60%;height:18px;margin-top:6px"></div>';
+  var s = '<div>'; opts.forEach(function(k){ s += '<div>'+k+'. '+esc(q[k])+'</div>'; }); s += '</div>'; return s;
+}
+
+// 冲刺包
+document.querySelector('#btnSprint').onclick = async function(){ await buildSprintPlan(); openSprint(); };
+function openSprint(){ document.getElementById('dlgSprint').style.display='flex'; }
+function closeSprint(){ document.getElementById('dlgSprint').style.display='none'; }
+async function buildSprintPlan(){
+  var weak = {}; (mistakes||[]).forEach(function(m){ weak[m.grammar] = (weak[m.grammar]||0)+1; });
+  var top = Object.entries(weak).sort(function(a,b){return b[1]-a[1];}).slice(0,4).map(function(x){return x[0];});
+  if(top.length===0){ top=['主谓一致','一般过去时','现在完成时','被动语态']; }
+  var prompt = '请基于以下学生的薄弱点，生成7天冲刺计划（表格+每日任务清单），对象是六年级，语法点按从易到难循序安排，含：当天复习旧错题条数、练习新题数量、重点语法微课标题、家长检查要点。薄弱点：'+top.join('、');
+  var r = await API.chat({messages:[{role:'system',content:'你是小学英语教练，输出使用有序列表和小标题，适合打印。'},{role:'user',content:prompt}]});
+  var text = (r.choices && r.choices[0] && r.choices[0].message && r.choices[0].message.content) || '（生成失败）';
+  document.getElementById('sprintPlan').innerHTML = '<div style="white-space:pre-wrap">'+text+'</div>';
+}
+async function downloadSprintPDF(){
+  var el = document.querySelector('#sprintPlan');
+  await html2pdf().set({ margin:10, filename:'考试周冲刺_'+Date.now()+'.pdf', image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2}, jsPDF:{unit:'mm',format:'a4',orientation:'portrait'} }).from(el).save();
+}
+
+// 班级面板
+document.querySelector('#btnRefreshClass').onclick = async function(){
+  var r = await API.classStats();
+  var list = (r.ok && r.data && r.data.members) ? r.data.members : [];
+  var rank = list.slice(0,10).map(function(x){
+    var rate = Math.round((x.stats.correct/Math.max(1,x.stats.done))*100);
+    return '<li>'+ (x.nickname||x.phone) +' — 正确率 '+rate+'% · 连续 '+(x.stats.streak||0)+' 天</li>';
+  }).join('');
+  document.querySelector('#rankList').innerHTML = rank || '<li>暂无数据</li>';
+  var overview = (r.ok && r.data && r.data.overview) ? r.data.overview : {avg_rate:0, avg_streak:0};
+  document.querySelector('#overviewBox').innerHTML = '班级平均正确率：<b>'+overview.avg_rate+'%</b> · 平均连续打卡：<b>'+overview.avg_streak+'天</b>';
+  var labels = list.slice(0,10).map(function(x){return x.nickname||x.phone;});
+  var data = list.slice(0,10).map(function(x){return Math.round((x.stats.correct/Math.max(1,x.stats.done))*100);});
+  var ctx = document.getElementById('chartRate').getContext('2d');
+  if(window.chartRate){ window.chartRate.destroy(); }
+  window.chartRate = new Chart(ctx, { type:'bar', data:{labels:labels, datasets:[{label:'正确率(%)', data:data}]} , options:{responsive:true, scales:{y:{beginAtZero:true, max:100}}}});
+};
+
+ensureLoginUI(); loadProgress(); loadProfile();
+</script>
+</body></html>
